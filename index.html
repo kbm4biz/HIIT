@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HIIT Jumping Jacks Timer</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+      background-color: #f5f5f5;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    /* Emoji container for floating emojis in the background */
+    #emojiContainer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: -1;
+    }
+    .emoji {
+      position: absolute;
+      font-size: 2em;
+      /* Start just below the visible area */
+      bottom: -40px;
+      animation: floatEmoji 10s linear infinite;
+    }
+    /* Updated keyframes: Emojis float from the bottom (−40px) to the top (100% of container) */
+    @keyframes floatEmoji {
+      0% {
+        bottom: -40px;
+        opacity: 0;
+      }
+      20% {
+        opacity: 1;
+      }
+      80% {
+        opacity: 1;
+      }
+      100% {
+        bottom: 100%;
+        opacity: 0;
+      }
+    }
+    .container {
+      max-width: 500px;
+      margin: auto;
+      padding: 20px;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      position: relative;
+      z-index: 1;
+    }
+    h1 {
+      font-size: 2em;
+      margin-bottom: 20px;
+    }
+    #activity {
+      font-size: 1.5em;
+      margin-bottom: 10px;
+    }
+    #display {
+      font-size: 3em;
+      margin: 20px 0;
+    }
+    button {
+      font-size: 1.5em;
+      padding: 10px 20px;
+      margin-top: 20px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+    }
+    button:active {
+      transform: scale(0.98);
+    }
+    /* Attractive session progress bar */
+    #progressBarContainer {
+      width: 100%;
+      height: 20px;
+      background: #ddd;
+      border-radius: 10px;
+      margin: 20px 0;
+      overflow: hidden;
+    }
+    #progressBar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #ff6ec4, #7873f5);
+      border-radius: 10px;
+      transition: width 0.5s;
+    }
+    /* Visual motion area */
+    #motionContainer {
+      width: 100%;
+      height: 250px;
+      margin-top: 20px;
+      position: relative;
+      overflow: hidden;
+      background-color: #eee;
+      border-radius: 5px;
+    }
+    #motionBall {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      /* Shiny, colorful ball using a radial gradient */
+      background: radial-gradient(circle, #ff6ec4, #7873f5);
+      box-shadow: 0 0 15px rgba(255, 110, 196, 0.6), 0 0 30px rgba(120, 115, 245, 0.4);
+      position: absolute;
+      left: calc(50% - 20px);
+      top: calc(50% - 20px);
+    }
+    /* Bounce animation for the ball – a simple vertical bounce */
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-40px); }
+    }
+  </style>
+</head>
+<body>
+  <!-- Emoji background with more varied and numerous emojis -->
+  <div id="emojiContainer">
+    <span class="emoji" style="left: 5%; animation-delay: 0s;">💪</span>
+    <span class="emoji" style="left: 15%; animation-delay: 1s;">🏃</span>
+    <span class="emoji" style="left: 25%; animation-delay: 2s;">🏋️‍♀️</span>
+    <span class="emoji" style="left: 35%; animation-delay: 3s;">🤸‍♀️</span>
+    <span class="emoji" style="left: 45%; animation-delay: 4s;">🚴</span>
+    <span class="emoji" style="left: 55%; animation-delay: 5s;">🔥</span>
+    <span class="emoji" style="left: 65%; animation-delay: 6s;">🏆</span>
+    <span class="emoji" style="left: 75%; animation-delay: 7s;">💥</span>
+    <span class="emoji" style="left: 85%; animation-delay: 8s;">🤩</span>
+    <span class="emoji" style="left: 95%; animation-delay: 9s;">🎉</span>
+  </div>
+
+  <div class="container">
+    <h1>HIIT Jumping Jacks Timer</h1>
+    <!-- Session Progress Bar -->
+    <div id="progressBarContainer">
+      <div id="progressBar"></div>
+    </div>
+    <div id="activity">Press Start to Begin</div>
+    <div id="display">00:00</div>
+    <!-- Visual motion element -->
+    <div id="motionContainer">
+      <div id="motionBall"></div>
+    </div>
+    <button id="startButton">Start Session</button>
+  </div>
+
+  <script>
+    // Define phases with interval number, type, descriptive name, duration, and background color.
+    const phases = [
+      { interval: 1, type: "Exercise", name: "Jumping Jacks (easy pace)", duration: 30, color: "#90EE90" },
+      { interval: 1, type: "Rest", name: "Rest", duration: 30, color: "#D3D3D3" },
+      { interval: 2, type: "Exercise", name: "Jumping Jacks (moderate pace)", duration: 30, color: "#FFA500" },
+      { interval: 2, type: "Rest", name: "Rest", duration: 30, color: "#D3D3D3" },
+      { interval: 3, type: "Exercise", name: "Jumping Jacks (moderate pace)", duration: 30, color: "#FFA500" },
+      { interval: 3, type: "Rest", name: "Rest", duration: 30, color: "#D3D3D3" },
+      { interval: 4, type: "Exercise", name: "Jumping Jacks (moderate-fast)", duration: 30, color: "#FF6347" },
+      { interval: 4, type: "Rest", name: "Rest", duration: 30, color: "#D3D3D3" },
+      { interval: 5, type: "Exercise", name: "Jumping Jacks (moderate pace)", duration: 30, color: "#FFA500" },
+      { interval: 5, type: "Rest", name: "Rest", duration: 30, color: "#D3D3D3" },
+      { interval: 6, type: "Exercise", name: "Jumping Jacks (moderate-fast)", duration: 30, color: "#FF6347" },
+      { interval: 6, type: "Rest", name: "Rest", duration: 30, color: "#D3D3D3" },
+      { interval: 7, type: "Exercise", name: "Jumping Jacks (moderate pace)", duration: 30, color: "#FFA500" },
+      { interval: 7, type: "Rest", name: "Rest", duration: 30, color: "#D3D3D3" },
+      { interval: 8, type: "Exercise", name: "Jumping Jacks (easy cool-down)", duration: 30, color: "#ADD8E6" },
+      { interval: 8, type: "Rest", name: "Rest/Stretch", duration: 30, color: "#D3D3D3" }
+    ];
+
+    let currentPhase = 0;
+    let timer;
+    let remainingTime = 0;
+    let elapsedTime = 0;
+    // Total session time in seconds.
+    const totalSessionTime = phases.reduce((total, phase) => total + phase.duration, 0);
+
+    const activityDiv = document.getElementById("activity");
+    const displayDiv = document.getElementById("display");
+    const startButton = document.getElementById("startButton");
+    const motionBall = document.getElementById("motionBall");
+    const progressBar = document.getElementById("progressBar");
+
+    function startSession() {
+      startButton.disabled = true;
+      currentPhase = 0;
+      elapsedTime = 0;
+      updateProgressBar();
+      runPhase();
+    }
+
+    function runPhase() {
+      if (currentPhase >= phases.length) {
+        activityDiv.textContent = "Session Complete!";
+        displayDiv.textContent = "";
+        document.body.style.backgroundColor = "#f5f5f5";
+        motionBall.style.animation = "";
+        motionBall.style.left = "calc(50% - 20px)";
+        motionBall.style.top = "calc(50% - 20px)";
+        startButton.disabled = false;
+        return;
+      }
+
+      const phase = phases[currentPhase];
+      remainingTime = phase.duration;
+      activityDiv.textContent = "Interval " + phase.interval + " - " + phase.name;
+      document.body.style.backgroundColor = phase.color;
+      updateBallAnimation(phase);
+      updateDisplay();
+
+      timer = setInterval(() => {
+        remainingTime--;
+        elapsedTime++;
+        updateDisplay();
+        updateProgressBar();
+        if (remainingTime <= 0) {
+          clearInterval(timer);
+          currentPhase++;
+          runPhase();
+        }
+      }, 1000);
+    }
+
+    // Update the ball animation based on phase type and intensity.
+    // Instead of a U-shaped motion, we use a vertical bounce to help the user mimic the rhythm.
+    function updateBallAnimation(phase) {
+      if (phase.type === "Exercise") {
+        let duration;
+        const name = phase.name.toLowerCase();
+        if (name.includes("easy")) {
+          duration = "1.5s"; // slower bounce for easy pace
+        } else if (name.includes("moderate-fast") || name.includes("hard")) {
+          duration = "0.8s"; // faster bounce for high intensity
+        } else {
+          duration = "1.2s"; // moderate bounce
+        }
+        motionBall.style.animation = `bounce ${duration} ease-in-out infinite`;
+      } else {
+        // During rest, stop the ball and center it.
+        motionBall.style.animation = "none";
+        motionBall.style.left = "calc(50% - 20px)";
+        motionBall.style.top = "calc(50% - 20px)";
+      }
+    }
+
+    // Bounce animation keyframes are defined in CSS.
+    function updateDisplay() {
+      let minutes = Math.floor(remainingTime / 60);
+      let seconds = remainingTime % 60;
+      minutes = minutes < 10 ? "0" + minutes : minutes;
+      seconds = seconds < 10 ? "0" + seconds : seconds;
+      displayDiv.textContent = minutes + ":" + seconds;
+    }
+
+    function updateProgressBar() {
+      const progressPercent = (elapsedTime / totalSessionTime) * 100;
+      progressBar.style.width = progressPercent + "%";
+    }
+
+    startButton.addEventListener("click", startSession);
+  </script>
+  <!-- Bounce keyframes for the ball -->
+  <style>
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-40px); }
+    }
+  </style>
+</body>
+</html>
