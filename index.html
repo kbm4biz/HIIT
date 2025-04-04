@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>HIIT Jumping Jacks Timer</title>
   <style>
+    /* Global Styles */
     body {
       margin: 0;
       padding: 20px;
@@ -14,7 +15,7 @@
       position: relative;
       overflow: hidden;
     }
-    /* Emoji container for floating emojis in the background */
+    /* Emoji container for floating emojis */
     #emojiContainer {
       position: fixed;
       top: 0;
@@ -27,11 +28,11 @@
     .emoji {
       position: absolute;
       font-size: 2em;
-      /* Start just below the visible area */
+      /* Start slightly offscreen (below) */
       bottom: -40px;
       animation: floatEmoji 10s linear infinite;
     }
-    /* Updated keyframes: Emojis float from the bottom (−40px) to the top (100% of container) */
+    /* Floating emoji animation: from bottom (-40px) to top (100% of container) */
     @keyframes floatEmoji {
       0% {
         bottom: -40px;
@@ -48,6 +49,7 @@
         opacity: 0;
       }
     }
+    /* Main container */
     .container {
       max-width: 500px;
       margin: auto;
@@ -82,7 +84,7 @@
     button:active {
       transform: scale(0.98);
     }
-    /* Attractive session progress bar */
+    /* Session progress bar styles */
     #progressBarContainer {
       width: 100%;
       height: 20px;
@@ -98,7 +100,7 @@
       border-radius: 10px;
       transition: width 0.5s;
     }
-    /* Visual motion area */
+    /* Motion area for the ball */
     #motionContainer {
       width: 100%;
       height: 250px;
@@ -112,14 +114,13 @@
       width: 40px;
       height: 40px;
       border-radius: 50%;
-      /* Shiny, colorful ball using a radial gradient */
       background: radial-gradient(circle, #ff6ec4, #7873f5);
       box-shadow: 0 0 15px rgba(255, 110, 196, 0.6), 0 0 30px rgba(120, 115, 245, 0.4);
       position: absolute;
       left: calc(50% - 20px);
       top: calc(50% - 20px);
     }
-    /* Bounce animation for the ball – a simple vertical bounce */
+    /* Bounce animation for the ball */
     @keyframes bounce {
       0%, 100% { transform: translateY(0); }
       50% { transform: translateY(-40px); }
@@ -127,7 +128,7 @@
   </style>
 </head>
 <body>
-  <!-- Emoji background with more varied and numerous emojis -->
+  <!-- Emoji Background -->
   <div id="emojiContainer">
     <span class="emoji" style="left: 5%; animation-delay: 0s;">💪</span>
     <span class="emoji" style="left: 15%; animation-delay: 1s;">🏃</span>
@@ -140,7 +141,6 @@
     <span class="emoji" style="left: 85%; animation-delay: 8s;">🤩</span>
     <span class="emoji" style="left: 95%; animation-delay: 9s;">🎉</span>
   </div>
-
   <div class="container">
     <h1>HIIT Jumping Jacks Timer</h1>
     <!-- Session Progress Bar -->
@@ -149,15 +149,17 @@
     </div>
     <div id="activity">Press Start to Begin</div>
     <div id="display">00:00</div>
-    <!-- Visual motion element -->
+    <!-- Motion container for the bouncing ball -->
     <div id="motionContainer">
       <div id="motionBall"></div>
     </div>
     <button id="startButton">Start Session</button>
   </div>
-
+  
+  <!-- Include NoSleep.js (from a CDN) to prevent auto-lock -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/nosleep/0.12.0/NoSleep.min.js"></script>
   <script>
-    // Define phases with interval number, type, descriptive name, duration, and background color.
+    // Define HIIT phases
     const phases = [
       { interval: 1, type: "Exercise", name: "Jumping Jacks (easy pace)", duration: 30, color: "#90EE90" },
       { interval: 1, type: "Rest", name: "Rest", duration: 30, color: "#D3D3D3" },
@@ -176,28 +178,35 @@
       { interval: 8, type: "Exercise", name: "Jumping Jacks (easy cool-down)", duration: 30, color: "#ADD8E6" },
       { interval: 8, type: "Rest", name: "Rest/Stretch", duration: 30, color: "#D3D3D3" }
     ];
-
+    
     let currentPhase = 0;
     let timer;
     let remainingTime = 0;
     let elapsedTime = 0;
     // Total session time in seconds.
     const totalSessionTime = phases.reduce((total, phase) => total + phase.duration, 0);
-
+    
+    // Get DOM element references.
     const activityDiv = document.getElementById("activity");
     const displayDiv = document.getElementById("display");
     const startButton = document.getElementById("startButton");
     const motionBall = document.getElementById("motionBall");
     const progressBar = document.getElementById("progressBar");
-
+    
+    // Instantiate NoSleep.
+    var noSleep = new NoSleep();
+    
     function startSession() {
+      // Enable NoSleep (must be triggered by a user gesture)
+      noSleep.enable();
+      
       startButton.disabled = true;
       currentPhase = 0;
       elapsedTime = 0;
       updateProgressBar();
       runPhase();
     }
-
+    
     function runPhase() {
       if (currentPhase >= phases.length) {
         activityDiv.textContent = "Session Complete!";
@@ -207,16 +216,18 @@
         motionBall.style.left = "calc(50% - 20px)";
         motionBall.style.top = "calc(50% - 20px)";
         startButton.disabled = false;
+        // Disable NoSleep when session is complete.
+        noSleep.disable();
         return;
       }
-
+      
       const phase = phases[currentPhase];
       remainingTime = phase.duration;
       activityDiv.textContent = "Interval " + phase.interval + " - " + phase.name;
       document.body.style.backgroundColor = phase.color;
       updateBallAnimation(phase);
       updateDisplay();
-
+      
       timer = setInterval(() => {
         remainingTime--;
         elapsedTime++;
@@ -229,9 +240,8 @@
         }
       }, 1000);
     }
-
-    // Update the ball animation based on phase type and intensity.
-    // Instead of a U-shaped motion, we use a vertical bounce to help the user mimic the rhythm.
+    
+    // Update ball animation: use a vertical bounce to mimic the rhythm.
     function updateBallAnimation(phase) {
       if (phase.type === "Exercise") {
         let duration;
@@ -245,14 +255,14 @@
         }
         motionBall.style.animation = `bounce ${duration} ease-in-out infinite`;
       } else {
-        // During rest, stop the ball and center it.
+        // For rest phases, stop the ball animation and center it.
         motionBall.style.animation = "none";
         motionBall.style.left = "calc(50% - 20px)";
         motionBall.style.top = "calc(50% - 20px)";
       }
     }
-
-    // Bounce animation keyframes are defined in CSS.
+    
+    // Update timer display.
     function updateDisplay() {
       let minutes = Math.floor(remainingTime / 60);
       let seconds = remainingTime % 60;
@@ -260,20 +270,14 @@
       seconds = seconds < 10 ? "0" + seconds : seconds;
       displayDiv.textContent = minutes + ":" + seconds;
     }
-
+    
+    // Update session progress bar.
     function updateProgressBar() {
       const progressPercent = (elapsedTime / totalSessionTime) * 100;
       progressBar.style.width = progressPercent + "%";
     }
-
+    
     startButton.addEventListener("click", startSession);
   </script>
-  <!-- Bounce keyframes for the ball -->
-  <style>
-    @keyframes bounce {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-40px); }
-    }
-  </style>
 </body>
 </html>
